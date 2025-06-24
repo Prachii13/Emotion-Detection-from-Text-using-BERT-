@@ -1,0 +1,9 @@
+emotion_detector/
+├── data/emotion_dataset.csv           # Dataset
+├── train_model.py                     # Fine-tune BERT
+├── predict.py                         # CLI prediction
+├── app.py                             # Streamlit UI
+├── emotion_model/                     # Saved model
+├── requirements.txt
+├── README.md
+└── .gitignore
