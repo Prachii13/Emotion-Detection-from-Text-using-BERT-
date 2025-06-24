@@ -1,0 +1,17 @@
+import streamlit as st
+from transformers import BertTokenizer, BertForSequenceClassification
+import torch
+
+st.title("😊 Emotion Detector")
+
+model = BertForSequenceClassification.from_pretrained("emotion_model")
+tokenizer = BertTokenizer.from_pretrained("emotion_model")
+labels = ['anger', 'fear', 'joy', 'love', 'sadness', 'surprise']
+
+user_input = st.text_input("Enter a sentence:")
+if st.button("Predict"):
+    if user_input:
+        inputs = tokenizer(user_input, return_tensors="pt", truncation=True, padding=True)
+        outputs = model(**inputs)
+        pred = torch.argmax(outputs.logits, dim=1).item()
+        st.subheader(f"Predicted Emotion: **{labels[pred]}**")
