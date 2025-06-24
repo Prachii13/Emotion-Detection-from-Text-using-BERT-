@@ -1,0 +1,44 @@
+
+---
+
+### 🔧 `train_model.py` (BERT Fine-Tuning)
+```python
+import pandas as pd
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
+from sklearn.preprocessing import LabelEncoder
+from datasets import Dataset
+
+df = pd.read_csv("data/emotion_dataset.csv")
+le = LabelEncoder()
+df['label'] = le.fit_transform(df['emotion'])
+
+dataset = Dataset.from_pandas(df[['text', 'label']])
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+def tokenize(example):
+    return tokenizer(example['text'], truncation=True, padding='max_length')
+
+tokenized = dataset.map(tokenize, batched=True)
+tokenized = tokenized.rename_column("label", "labels")
+tokenized.set_format('torch', columns=['input_ids', 'attention_mask', 'labels'])
+
+model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=6)
+
+training_args = TrainingArguments(
+    output_dir="./emotion_model",
+    evaluation_strategy="no",
+    per_device_train_batch_size=16,
+    num_train_epochs=2,
+    save_strategy="epoch"
+)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized
+)
+
+trainer.train()
+model.save_pretrained("emotion_model")
+tokenizer.save_pretrained("emotion_model")
